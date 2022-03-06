@@ -32,27 +32,26 @@ const cargarArchivo = async (req, res = response) => {
   }
 };
 
-/* const getNoticias = async (req, res) => {
-  Cards.find({}, (err, imagenes) => {
+const getNoticias = async (req, res) => {
+  Cards.find({}, (err, noticias) => {
     if (err) {
       res.status(404).json({ message: "Error del servidor" });
     } else {
-      if (imagenes == null || imagenes === undefined || imagenes.length === 0) {
+      if (noticias== null || noticias === undefined || noticias.length === 0) {
         res
           .status(404)
           .json({ message: "No hay noticias creadas en el momento" });
       } else {
-       
-        const pathimagen = path.join(__dirname, "../uploads", imagenes);
-        if (fs.existsSync(pathimagen)) {
-         return res.sendFile(pathimagen)
-        }
+        res
+        .status(200)
+        .json(noticias );
+        
       } 
     }
   });
-};  */
+}; 
 
 module.exports = {
   cargarArchivo,
-  /*  getNoticias, */
+   getNoticias,
 };

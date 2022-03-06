@@ -109,6 +109,7 @@ const getUsers = (req, res) => {
 
 const deleteUser = (req, res) => {
   const { email } = req.body;
+ 
   if (!email) {
     res.status(404).json({ message: "Ingresar email" });
   } else {
@@ -126,7 +127,7 @@ const deleteUser = (req, res) => {
             );
         }
       }
-    });
+    }); 
   }
 };
 
@@ -135,11 +136,11 @@ const getUser = (req, res) => {
   if (!email) {
     res.status(404).json({ message: "Ingresar email" });
   } else {
-    User.findOne({ email }, function (err, docs) {
+    User.find({ email }, function (err, docs) {
       if (err) {
         res.status(404).json({ message: "Error del servidor" });
       } else {
-        if (docs === null) {
+        if (docs.length ===0) {
           res.status(200).json({ message: "El usuario no existe" });
         } else {
           res.status(200).json(docs);
@@ -162,7 +163,7 @@ const updateUser = (req, res) => {
   user.apartmentNumber = req.body.apartmentNumber;
 
   User.findOne({ _id: id }, (err, usuario) => {
-    if (err) {
+    if (err) { 
       res.status(404).json({ message: "El usuario no existe" });
     } else {
       User.findOne({ email: user.email }, (err, result) => {
@@ -235,7 +236,7 @@ const updateUser = (req, res) => {
           } else {
             res.status(404).json({message:"El email ya esta en uso por otra persona"});
           }
-        }
+        } 
       });
     }
   });
@@ -253,7 +254,7 @@ const getEmail = (req, res) => {
         if (user === null) {
           res.status(404).json({ message: "El usuario no existe" });
         } else {
-          res.status(404).json(user);
+          res.status(404).json(user); 
         }
       }
     });
@@ -264,7 +265,7 @@ const getApartmentNumber = (req, res) => {
   const { apartmentNumber } = req.body;
 
   if (
-    apartmentNumber === null ||
+    apartmentNumber === null || 
     apartmentNumber === undefined ||
     apartmentNumber === ""
   ) {
@@ -274,7 +275,7 @@ const getApartmentNumber = (req, res) => {
   } else {
     User.find({ apartmentNumber: apartmentNumber }, (err, user) => {
       if (err) {
-        res.status(404).json({ message: "Error con el servidor" });
+        res.status(404).json({ message: "Error con el servidor" }); 
       } else {
         if (user === null || user === undefined || user.length === 0) {
           res.status(404).json({
