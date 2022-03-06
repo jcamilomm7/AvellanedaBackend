@@ -152,71 +152,62 @@ const getUser = (req, res) => {
 const updateUser = (req, res) => {
   const user = new User();
 
-  const {
-    id,
-    name,
-    lastname,
-    email,
-    password,
-    repeatPassword,
-    cell,
-    dateBirth,
-    apartmentNumber,
-  } = req.body;
+  const id = req.body._id;
+  user.name = req.body.name;
+  user.lastname = req.body.lastname;
+  user.email = req.body.email;
+  user.password = req.body.password;
+  user.cell = req.body.cell;
+  user.dateBirth = req.body.dateBirth;
+  user.apartmentNumber = req.body.apartmentNumber;
 
   User.findOne({ _id: id }, (err, usuario) => {
     if (err) {
-      res.status(404).json("El usuario no existe");
+      res.status(404).json({ message: "El usuario no existe" });
     } else {
-      if (name != "") {
-        user.name = name;
-      } else {
-        user.name = usuario.name;
-      }
-      if (lastname != "") {
-        user.lastname = lastname;
-      } else {
-        user.lastname = usuario.lastname;
-      }
-      if (email != "") {
-        user.email = email;
-      } else {
-        user.email = usuario.email;
-      }
-
-      if (password != "") {
-        user.password = password;
-      } else {
-        user.password = usuario.password;
-      }
-      if (repeatPassword != "") {
-        user.repeatPassword = repeatPassword;
-      } else {
-        user.repeatPassword = usuario.repeatPassword;
-      }
-      if (cell != "") {
-        user.cell = cell;
-      } else {
-        user.cell = usuario.cell;
-      }
-      if (dateBirth != "") {
-        user.dateBirth = dateBirth;
-      } else {
-        user.dateBirth = usuario.dateBirth;
-      }
-      if (apartmentNumber != undefined) {
-        user.apartmentNumber = apartmentNumber;
-      } else {
-        user.apartmentNumber = usuario.apartmentNumber;
-      }
-      if (user.email === usuario.email) {
-        res.status(404).json("Ya tienes la cuenta con este correo");
-      } else {
-        User.find({ email: user.email }, (err, result) => {
-          if (err) {
-            res.status(404).json("Error al crear el usuario");
-          } else {
-            if (result.length === 0) {
+      User.findOne({ email: user.email }, (err, result) => {
+        if (err) {
+          res.status(404).json({ message: "Error con la base de datos" });
+        } else {
+          if (
+            result === null ||
+            result === undefined ||
+            result.email === usuario.email
+          ) {
+            if (user.password !== usuario.password) {
+              bcrypt.hash(user.password, null, null, (err, hash) => {
+                if (err) {
+                  res
+                    .status(500)
+                    .json({ message: "Error al encryptar la contraseña" });
+                } else {
+                  user.password = hash;
+                  User.updateOne(
+                    { _id: id },
+                    {
+                      $set: {
+                        name: user.name,
+                        lastname: user.lastname,
+                        email: user.email,
+                        password: user.password,
+                        cell: user.cell,
+                        dateBirth: user.dateBirth,
+                        apartmentNumber: user.apartmentNumber,
+                      },
+                    },
+                    (err, result) => {
+                      if (err) {
+                        res
+                          .status(404)
+                          .json({ message: "Error al actualizar usuario" });
+                      } else {
+                        res.status(404).json({ usuario });
+                      }
+                    }
+                  );
+                }
+              });
+            } else {
               User.updateOne(
                 { _id: id },
                 {
@@ -232,35 +223,36 @@ const updateUser = (req, res) => {
                 },
                 (err, result) => {
                   if (err) {
-                    res.status(404).json("Error al actualizar usuario");
+                    res
+                      .status(404)
+                      .json({ message: "Error al actualizar usuario" });
                   } else {
-                    res.status(404).json("Usuario actualizado");
+                    res.status(404).json(true);
                   }
                 }
               );
-            } else {
-              res.status(404).json("El correo ya esta en uso por otro usuario");
             }
+          } else {
+            res.status(404).json({message:"El email ya esta en uso por otra persona"});
           }
-        });
-      }
+        }
+      });
     }
   });
 };
-
 const getEmail = (req, res) => {
   const { email } = req.body;
 
   if (email === null || email === undefined || email === "") {
-    res.status(404).json({message:"Debes ingresar un correo"});
+    res.status(404).json({ message: "Debes ingresar un correo" });
   } else {
     User.findOne({ email: email }, (err, user) => {
       if (err) {
-        res.status(404).json({message:"Error con el servidor"});
-      } else{
-        if(user === null){
-          res.status(404).json({message:"El usuario no existe"});
-        }else{
+        res.status(404).json({ message: "Error con el servidor" });
+      } else {
+        if (user === null) {
+          res.status(404).json({ message: "El usuario no existe" });
+        } else {
           res.status(404).json(user);
         }
       }
@@ -271,16 +263,24 @@ const getEmail = (req, res) => {
 const getApartmentNumber = (req, res) => {
   const { apartmentNumber } = req.body;
 
-  if (apartmentNumber === null || apartmentNumber === undefined || apartmentNumber === "") {
-    res.status(404).json({message:"Debes ingresar un numero de apartamento"});
+  if (
+    apartmentNumber === null ||
+    apartmentNumber === undefined ||
+    apartmentNumber === ""
+  ) {
+    res
+      .status(404)
+      .json({ message: "Debes ingresar un numero de apartamento" });
   } else {
     User.find({ apartmentNumber: apartmentNumber }, (err, user) => {
       if (err) {
-        res.status(404).json({message:"Error con el servidor"});
-      } else{
-        if(user === null || user === undefined || user.length===0){
-          res.status(404).json({message:`No hay usuarios relacionados con el apartamento: ${apartmentNumber}`});
-        }else{
+        res.status(404).json({ message: "Error con el servidor" });
+      } else {
+        if (user === null || user === undefined || user.length === 0) {
+          res.status(404).json({
+            message: `No hay usuarios relacionados con el apartamento: ${apartmentNumber}`,
+          });
+        } else {
           res.status(404).json(user);
         }
       }
